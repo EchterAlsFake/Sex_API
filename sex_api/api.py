@@ -12,8 +12,8 @@ try:
     from modules.consts import *
 
 except (ImportError, ModuleNotFoundError):
-    from modules import *
-    from modules.consts import *
+    from .modules import *
+    from .modules.consts import *
 
 class Comment:
     """
