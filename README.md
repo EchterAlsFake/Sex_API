@@ -1,4 +1,4 @@
-<h1 align="center">XVIDEOS API</h1> 
+<h1 align="center">Sex.com API</h1> 
 
 <div align="center">
     <a href="https://pepy.tech/project/sex_api"><img src="https://static.pepy.tech/badge/sex_api" alt="Downloads"></a>
