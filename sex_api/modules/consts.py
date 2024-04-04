@@ -40,5 +40,26 @@ regex_pin_publish_date = re.compile(r'datetime="(.*?)T')
 regex_pin_download_url = re.compile(r'<img\s+(?=.*?\balt\b)(?=.*?\bwidth\b)(?=.*?\bheight\b).*?src="(.*?)".*?>')
 regex_pin_download_url_mp4 = re.compile('<video[^>]*\sid="video_html5_api"\sclass="vjs-tech"[^>]*\ssrc="([^"]*)"')
 regex_detect_video = re.compile(r'To view this video please enable JavaScript, and consider upgrading to a (.*?) browser that')
+
 # Tag
 regex_tag_name = re.compile(r'class="tag">(.*?)</a>')
+
+# Search
+regex_extract_pins = re.compile(r'a class="image_wrapper" href="(.*?)/"')
+
+# Users
+regex_extract_name = re.compile(r'h1>(.*?)</h1>')
+regex_description = re.compile(r'<div class="description">(.*?)</div>')
+regex_amount_boards = re.compile(r'">(.*?) Boards')
+regex_amount_following = re.compile(r'">(.*?) Following')
+regex_amount_pins = re.compile(r'/pins/">(.*?) Pins')
+regex_amount_repins = re.compile(r'">(.*?) Repins')
+regex_amount_likes = re.compile(r'">(.*?) Likes')
+regex_get_boards = re.compile(r'<a href="(.*?)/"><strong>')
+
+# Boards
+regex_follower_count = re.compile(r'<div class="followerCount">(.*?) followers</div>')
+regex_pin_count = re.compile(r'<div class="pinCount">(.*?) pins</div>')
+
+# Other
+regex_get_total_pages = re.compile(r'page=(.*?)" class="btn btn-default">')

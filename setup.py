@@ -5,12 +5,10 @@ setup(
     version="1.0",
     packages=find_packages(),
     install_requires=[
-        "requests", "lxml", "bs4", "eaf_base_api"
+        "requests", "eaf_base_api"
     ],
     entry_points={
-        'console_scripts': [
-            # If you want to create any executable scripts
-        ],
+        'console_scripts': ['sex_api=sex_api.api:main'],
     },
     author="Johannes Habel",
     author_email="EchterAlsFake@proton.me",
