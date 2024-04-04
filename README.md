@@ -53,7 +53,7 @@ for pin in pins:
 > Sex API can also be run from the command line. Just execute: "xvideos_api -h" to get started.
 
 # Changelog
-See [Changelog](https://github.com/EchterAlsFake/xvideos_api/blob/master/README/Changelog.md) for more details.
+See [Changelog](https://github.com/EchterAlsFake/sex_api/blob/master/README/Changelog.md) for more details.
 
 # Contribution
 Do you see any issues or having some feature requests? Simply open an Issue or talk
