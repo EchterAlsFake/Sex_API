@@ -363,8 +363,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-client = Client()
-search = client.search("Ai Porn", mode=Mode.pics)
-for pin in search:
-    print(pin.embed_url)
