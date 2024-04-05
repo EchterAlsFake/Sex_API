@@ -294,7 +294,7 @@ class Client:
         return Pin(url)
 
     @classmethod
-    def search(cls, query, sort_relevance: Relevance = Relevance.popular, mode: Mode = Mode.pics, pages: int = 5) -> Generator[Pin, None, None]:
+    def search(cls, query, sort_relevance: Relevance = Relevance.popular, mode: Mode = Mode.pics, pages: int = 5) -> Generator:
         """
         :param query: (str) The search query
         :param sort_relevance: (Relevance) The Relevance object (see searching_filters.py)
@@ -304,11 +304,23 @@ class Client:
         query = query.replace(" ", "+")
 
         for page in range(1, pages):
-            content = Core().get_content(url=f"https://sex.com/search/{mode}?query={query}&sort={sort_relevance}&page={page}").decode("utf-8")
-            pins = regex_extract_pins.findall(content)
+            content = Core().get_content(url=f"https://sex.com/search/{mode}?query={query}{sort_relevance}&page={page}").decode("utf-8")
 
-            for pin in pins:
-                yield Pin(f"https://sex.com{pin}")
+            if mode == "pics" or mode == "gifs" or mode == "clips":
+                pins = regex_extract_pins.findall(content)
+
+                for pin in pins:
+                    yield Pin(f"https://sex.com{pin}")
+
+            elif mode == "users":
+                users = regex_get_users.findall(content)
+                for user in users:
+                    yield User(f"https://sex.com{user}")
+
+            elif mode == "boards":
+                boards = regex_get_boards.findall(content)
+                for board in boards:
+                    yield Board(f"https://sex.com{board}")
 
     @classmethod
     def get_user(cls, url) -> User:
@@ -350,3 +362,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+client = Client()
+search = client.search("Ai Porn", mode=Mode.pics)
+for pin in search:
+    print(pin.embed_url)

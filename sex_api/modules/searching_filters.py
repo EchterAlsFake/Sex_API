@@ -7,5 +7,6 @@ class Mode:
 
 
 class Relevance:
-    popular = "popular-all"
-    latest = "latest"
+    popular = "&sort=popular-all"
+    latest = "&sort=latest"
+    relevance = ""

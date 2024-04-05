@@ -21,6 +21,7 @@
 - [The Comment Object](#the-comment-object)
 - [The User Object](#the-user-object)
 - [The Board Object](#the-board-object)
+- [Searching](#searching)
 
 # Installation
 - PyPi: `pip install sex_api`
@@ -140,5 +141,29 @@ pins = board.get_pins()
 for pin in pins:
     print(pin.name) # ....
 ```
+
+# Searching
+```python
+from sex_api.api import Client
+from sex_api.modules.searching_filters import Mode, Relevance
+client = Client()
+
+search_object = client.search("Mia Khalifa", mode=Mode.pics, sort_relevance=Relevance.popular)
+for pin in search_object:
+    print(pin.name)
+```
+
+## The Filters:
+
+Mode:
+- Mode.pics > Searches for Pictures
+- Mode.clips > Searches for Clips
+- Mode.users > Searches for Users
+- Mode.gifs > Searches for gifs
+- Mode.boards > Searches for Boards
+
+Relevance:
+- Mode.popular > Searches for most popular Pins
+- Mode.latest > Searches for the latest Pins
 
 

@@ -56,6 +56,7 @@ regex_amount_pins = re.compile(r'/pins/">(.*?) Pins')
 regex_amount_repins = re.compile(r'">(.*?) Repins')
 regex_amount_likes = re.compile(r'">(.*?) Likes')
 regex_get_boards = re.compile(r'<a href="(.*?)/"><strong>')
+regex_get_users = re.compile(r'<div class="title"><a href="(.*?)"><i class="fa fa-user">', re.DOTALL)
 
 # Boards
 regex_follower_count = re.compile(r'<div class="followerCount">(.*?) followers</div>')
