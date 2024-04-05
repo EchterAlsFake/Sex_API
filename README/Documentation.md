@@ -1,6 +1,6 @@
 # Sex API Documentation
 
-> - Version 1.0
+> - Version 1.2
 > - Author: Johannes Habel
 > - Copyright (C) 2024
 > - License: LGPLv3
