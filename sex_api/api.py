@@ -79,9 +79,9 @@ class Pin:
     Represents a Pin from Sex.com/pin/...
     """
     def __init__(self, url):
+        self.url = url
         self.session = Core().get_content(url=url, headers=headers, cookies=cookies)
         self.html_content = self.session.decode("utf-8")
-        self.url = url
 
     @cached_property
     def name(self) -> str:
