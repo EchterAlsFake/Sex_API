@@ -7,7 +7,6 @@ from typing import Generator
 from functools import cached_property
 from base_api.base import Core, setup_api
 
-setup_api(do_logging=False)
 
 try:
     from modules.errors import *
@@ -79,6 +78,7 @@ class Pin:
     Represents a Pin from Sex.com/pin/...
     """
     def __init__(self, url):
+
         self.url = url
         self.session = Core().get_content(url=url, headers=headers, cookies=cookies)
         self.html_content = self.session.decode("utf-8")
