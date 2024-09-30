@@ -17,7 +17,7 @@ You can also perform a search with filters.
 
 
 # Quickstart
-### Have a look at the [Documentation](https://github.com/EchterAlsFake/sex_api/blob/master/README/Documentation.md) for more details
+### Have a look at the [Documentation](https://github.com/EchterAlsFake/API_Docs/blob/master/Porn_APIs/Sex_API.md) for more details
 
 - Install the library with `pip install sex_api`
 - Or with: `pip install git+https://github.com/EchterAlsFake/sex_api` for the latest fixes / features
