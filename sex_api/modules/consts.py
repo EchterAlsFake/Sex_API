@@ -38,7 +38,7 @@ regex_comment_count = re.compile(r'Comments \((.*?)\)')
 regex_pin_name = re.compile(r'<h1>\s*.*?\s*<span itemprop="name">\s*(.*?)\s*</span>', re.DOTALL)
 regex_pin_publish_date = re.compile(r'datetime="(.*?)T')
 regex_pin_download_url = re.compile(r'<img\s+(?=.*?\balt\b)(?=.*?\bwidth\b)(?=.*?\bheight\b).*?src="(.*?)".*?>')
-regex_pin_download_url_mp4 = re.compile('<video[^>]*\sid="video_html5_api"\sclass="vjs-tech"[^>]*\ssrc="([^"]*)"')
+regex_pin_download_url_mp4 = re.compile(r'<video[^>]*\sid="video_html5_api"\sclass="vjs-tech"[^>]*\ssrc="([^"]*)"')
 regex_detect_video = re.compile(r'To view this video please enable JavaScript, and consider upgrading to a (.*?) browser that')
 
 # Tag
