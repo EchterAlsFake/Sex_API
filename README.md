@@ -64,4 +64,4 @@ Pull requests are also welcome.
 # License
 Licensed under the LGPLv3 License
 
-Copyright (C) 2023–2024 Johannes Habel
+Copyright (C) 2023–2025 Johannes Habel
