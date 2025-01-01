@@ -55,6 +55,17 @@ for pin in pins:
 # Changelog
 See [Changelog](https://github.com/EchterAlsFake/sex_api/blob/master/README/Changelog.md) for more details.
 
+# Support (Donations)
+I am developing all my projects entirely for free. I do that because I have fun and I don't want
+to charge 30€ like other people do.
+
+However, if you find my work useful, please consider donating something. A tiny amount such as 1€
+means a lot to me.
+
+Paypal: https://paypal.me/EchterAlsFake
+<br>XMR (Monero): `46xL2reuanxZgFxXBBaoagiEJK9c7bL7aiwKNR15neyX2wUsX2QVzkeRMVG2Cro44qLUNYvsP1BQa12KPbNat2ML41nyEeq`
+
+
 # Contribution
 Do you see any issues or having some feature requests? Simply open an Issue or talk
 in the discussions.
@@ -63,5 +74,4 @@ Pull requests are also welcome.
 
 # License
 Licensed under the LGPLv3 License
-
-Copyright (C) 2023–2025 Johannes Habel
+<br>Copyright (C) 2023–2025 Johannes Habel
