@@ -1,13 +1,12 @@
-import argparse
 import os
-import requests
 import html
+import logging
+import argparse
 
 from typing import Generator
+from base_api.base import BaseCore
 from functools import cached_property
-from base_api.base import Core, setup_api
-
-
+from base_api.modules import consts as bs_consts
 try:
     from modules.errors import *
     from modules.consts import *
@@ -17,6 +16,16 @@ except (ImportError, ModuleNotFoundError):
     from .modules import *
     from .modules.consts import *
     from .modules.searching_filters import *
+
+bs_consts.HEADERS = headers
+core = BaseCore()
+logging.basicConfig(format='%(name)s %(levelname)s %(asctime)s %(message)s', datefmt='%I:%M:%S %p')
+logger = logging.getLogger("SEX API")
+logger.setLevel(logging.DEBUG)
+
+
+def disable_logging():
+    logger.setLevel(logging.CRITICAL)
 
 
 class Comment:
@@ -80,8 +89,7 @@ class Pin:
     def __init__(self, url):
 
         self.url = url
-        self.session = Core().get_content(url=url, headers=headers, cookies=cookies)
-        self.html_content = self.session.decode("utf-8")
+        self.html_content = core.fetch(url=url)
 
     @cached_property
     def name(self) -> str:
@@ -120,7 +128,7 @@ class Pin:
         urls = regex_pin_download_url.findall(self.html_content)
 
         for url in urls:
-            if str(url).startswith("https://cdn.sex.com/images/pinporn"):
+            if "pinporn" in url:
                 download_url.append(url)
 
         if len(download_url) >= 1:
@@ -137,7 +145,7 @@ class Pin:
             raise NotSupported("Sorry, but downloading this Pin is not supported. Remember, Clips (videos) are not "
                                "supported by this API!")
 
-        content = requests.get(url=self.embed_url, headers=headers, cookies=cookies)
+        content = core.fetch(url=self.embed_url)
         download_content = content.content
         name = self.name
 
@@ -164,7 +172,7 @@ class Pin:
 class Board:
     def __init__(self, url):
         self.url = url
-        self.html_content = Core().get_content(url).decode("utf-8")
+        self.html_content = core.fetch(url)
 
     @cached_property
     def total_pages_count(self) -> str:
@@ -181,12 +189,11 @@ class Board:
     def get_pins(self) -> Generator[Pin, None, None]:
         for page in range(1, 99):  # There is a really weird error then using @total_pages_count........ idk man...
             try:
-                content = Core().get_content(f"{self.url}?page={page}").decode("utf-8")
+                content = core.fetch(f"{self.url}?page={page}")
+                urls = regex_extract_pins.findall(content)
 
-            except AttributeError:
+            except (AttributeError, TypeError): # Type error because it returns "Response" object from base API if 404
                 break
-
-            urls = regex_extract_pins.findall(content)
 
             for url in urls:
                 yield Pin(f"https://sex.com{url}")
@@ -194,7 +201,7 @@ class Board:
 
 class User:
     def __init__(self, url):
-        self.html_content = Core().get_content(url, headers=headers, cookies=cookies).decode("utf-8")
+        self.html_content = core.fetch(url)
         self.url = url
 
     @cached_property
@@ -240,7 +247,7 @@ class User:
 
     def get_following_boards(self) -> Generator[Board, None, None]:
         """Returns the Boards the user if following too (as a Board object)"""
-        content = Core().get_content(f"{self.url}/following/").decode("utf-8")
+        content = core.fetch(f"{self.url}/following/")
         urls = regex_get_boards.findall(content)
         for url in urls:
             yield Board(f"https://sex.com{url}")
@@ -249,11 +256,12 @@ class User:
         """Returns the Pins of the User (as a Pin object)"""
         for page in range(1, 99):
             try:
-                content = Core().get_content(f"{self.url}/pins/?page={page}").decode("utf-8")
+                content = core.fetch(f"{self.url}/pins/?page={page}")
+                urls = regex_extract_pins.findall(content)
 
-            except AttributeError:
+            except (AttributeError, TypeError):
                 break
-            urls = regex_extract_pins.findall(content)
+
             for url in urls:
                 yield Pin(f"https://sex.com{url}")
 
@@ -261,12 +269,12 @@ class User:
         """Returns the Repins of the User (as a Pin object)"""
         for page in range(1, 99):
             try:
-                content = Core().get_content(f"{self.url}/repins/?page={page}").decode("utf-8")
+                content = core.fetch(f"{self.url}/repins/?page={page}")
+                urls = regex_extract_pins.findall(content)
 
-            except AttributeError:
+            except (AttributeError, TypeError):
                 break
 
-            urls = regex_extract_pins.findall(content)
             for url in urls:
                 yield Pin(f"https://sex.com{url}")
 
@@ -274,12 +282,12 @@ class User:
         """Returns the liked Pins of the User (as a Pin object)"""
         for page in range(1, 99):
             try:
-                content = Core().get_content(f"{self.url}/likes/?page={page}").decode("utf-8")
+                content = core.fetch(f"{self.url}/likes/?page={page}")
+                urls = regex_extract_pins.findall(content)
 
-            except AttributeError:
+            except (AttributeError, TypeError):
                 break
 
-            urls = regex_extract_pins.findall(content)
             for url in urls:
                 yield Pin(f"https://sex.com{url}")
 
@@ -305,7 +313,8 @@ class Client:
         query = query.replace(" ", "+")
 
         for page in range(1, pages):
-            content = Core().get_content(url=f"https://sex.com/search/{mode}?query={query}{sort_relevance}&page={page}").decode("utf-8")
+            content = core.fetch(url=f"https://sex.com/search/{mode}?query={query}{sort_relevance}&page={page}",
+                                 cookies=cookies)
 
             if mode == "pics" or mode == "gifs" or mode == "clips":
                 pins = regex_extract_pins.findall(content)

@@ -3,3 +3,6 @@
 
 # 1.2 
 - I swear I just sleep before releasing a new version -_-
+
+# 1.3
+- updated to eaf base api v2

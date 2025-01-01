@@ -1,7 +1,7 @@
 from ..api import Client
 
 client = Client()
-user = client.get_user("https://www.sex.com/user/keymatt22/")
+user = client.get_user("https://www.sex.com/user/twitchxxx")
 
 
 def test_user_attributes():
