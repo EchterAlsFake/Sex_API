@@ -6,3 +6,7 @@
 
 # 1.3
 - updated to eaf base api v2
+
+# 1.3-1
+- switched to httpx
+- removed requests from dependencies

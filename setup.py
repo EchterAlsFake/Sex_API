@@ -2,11 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name="Sex_API",
-    version="1.3",
+    version="1.3.1",
     packages=find_packages(),
-    install_requires=[
-    "requests", "eaf_base_api"
-    ],
+    install_requires=["eaf_base_api"],
     entry_points={
         'console_scripts': ['sex_api=sex_api.api:main'],
     },
