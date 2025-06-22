@@ -6,7 +6,8 @@ import argparse
 from typing import Generator
 from base_api.base import BaseCore
 from functools import cached_property
-from base_api.modules import consts as bs_consts
+from base_api.modules import config
+
 try:
     from modules.errors import *
     from modules.consts import *
@@ -17,11 +18,20 @@ except (ImportError, ModuleNotFoundError):
     from .modules.consts import *
     from .modules.searching_filters import *
 
-bs_consts.HEADERS = headers
 core = BaseCore()
 logging.basicConfig(format='%(name)s %(levelname)s %(asctime)s %(message)s', datefmt='%I:%M:%S %p')
 logger = logging.getLogger("SEX API")
 logger.setLevel(logging.DEBUG)
+
+
+def refresh_core(custom_config=None, enable_logging=False, log_file: str = None, level=None): # Needed for Porn Fetch
+    global core
+
+    cfg = custom_config or config.config
+    cfg.headers = headers
+    core = BaseCore(cfg)
+    if enable_logging:
+        core.enable_logging(log_file=log_file, level=level)
 
 
 def disable_logging():
@@ -96,6 +106,7 @@ class Pin:
         """
         :return: (str) The name of the Pin
         """
+        print(self.html_content)
         name = regex_pin_name.search(self.html_content)
         return name.group(1)
 
@@ -372,4 +383,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
