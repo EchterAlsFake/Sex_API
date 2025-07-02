@@ -18,25 +18,6 @@ except (ImportError, ModuleNotFoundError):
     from .modules.consts import *
     from .modules.searching_filters import *
 
-core = BaseCore()
-logging.basicConfig(format='%(name)s %(levelname)s %(asctime)s %(message)s', datefmt='%I:%M:%S %p')
-logger = logging.getLogger("SEX API")
-logger.setLevel(logging.DEBUG)
-
-
-def refresh_core(custom_config=None, enable_logging=False, log_file: str = None, level=None): # Needed for Porn Fetch
-    global core
-
-    cfg = custom_config or config.config
-    cfg.headers = headers
-    core = BaseCore(cfg)
-    if enable_logging:
-        core.enable_logging(log_file=log_file, level=level)
-
-
-def disable_logging():
-    logger.setLevel(logging.CRITICAL)
-
 
 class Comment:
     """
@@ -46,7 +27,7 @@ class Comment:
         self.html_content = html_content
 
     @cached_property
-    def ids(self) -> list:
+    def ids(self) -> Generator[int, None, None]:
         """
         Cached Property
         :return: (list(str)) The comment IDs under the Pin
@@ -55,7 +36,7 @@ class Comment:
         yield ids_
 
     @cached_property
-    def users(self) -> list:
+    def users(self) -> Generator[str, None, None]:
         """
         Cached Property
         :return: (list(str)) The usernames of commentators under the Pin
@@ -64,7 +45,7 @@ class Comment:
         yield users_
 
     @cached_property
-    def messages(self) -> list:
+    def messages(self) -> Generator[str, None, None]:
         """
         Cached Property
         :return: (list(str)) The content of messages (comments) under the Pin
@@ -96,17 +77,16 @@ class Pin:
     """
     Represents a Pin from Sex.com/pin/...
     """
-    def __init__(self, url):
-
+    def __init__(self, url, core=None):
+        self.core = core
         self.url = url
-        self.html_content = core.fetch(url=url)
+        self.html_content = self.core.fetch(url=url)
 
     @cached_property
     def name(self) -> str:
         """
         :return: (str) The name of the Pin
         """
-        print(self.html_content)
         name = regex_pin_name.search(self.html_content)
         return name.group(1)
 
@@ -142,8 +122,7 @@ class Pin:
             if "pinporn" in url:
                 download_url.append(url)
 
-        if len(download_url) >= 1:
-            return html.unescape(download_url[0])
+        return html.unescape(download_url[0])
 
     def download(self, path) -> bool:
         """
@@ -156,7 +135,7 @@ class Pin:
             raise NotSupported("Sorry, but downloading this Pin is not supported. Remember, Clips (videos) are not "
                                "supported by this API!")
 
-        content = core.fetch(url=self.embed_url)
+        content = self.core.fetch(url=self.embed_url)
         download_content = content.content
         name = self.name
 
@@ -174,6 +153,7 @@ class Pin:
 
         try:
             file.write(download_content)
+            file.close()
             return True
 
         except Exception as e:
@@ -181,9 +161,10 @@ class Pin:
 
 
 class Board:
-    def __init__(self, url):
+    def __init__(self, url, core=None):
+        self.core = core
         self.url = url
-        self.html_content = core.fetch(url)
+        self.html_content = self.core.fetch(url)
 
     @cached_property
     def total_pages_count(self) -> str:
@@ -198,21 +179,22 @@ class Board:
         return regex_pin_count.search(self.html_content).group(1)
 
     def get_pins(self) -> Generator[Pin, None, None]:
-        for page in range(1, 99):  # There is a really weird error then using @total_pages_count........ idk man...
+        for page in range(1, 99):  # There is a really weird error when using @total_pages_count........ idk man...
             try:
-                content = core.fetch(f"{self.url}?page={page}")
+                content = self.core.fetch(f"{self.url}?page={page}")
                 urls = regex_extract_pins.findall(content)
 
             except (AttributeError, TypeError): # Type error because it returns "Response" object from base API if 404
                 break
 
             for url in urls:
-                yield Pin(f"https://sex.com{url}")
+                yield Pin(f"https://sex.com{url}", core=self.core)
 
 
 class User:
-    def __init__(self, url):
-        self.html_content = core.fetch(url)
+    def __init__(self, url, core=None):
+        self.core = core
+        self.html_content = self.core.fetch(url)
         self.url = url
 
     @cached_property
@@ -254,67 +236,69 @@ class User:
         """Returns the Boards from the User (as a Board object)"""
         urls = regex_get_boards.findall(self.html_content)
         for url in urls:
-            yield Board(f"https://sex.com{url}")
+            yield Board(f"https://sex.com{url}", core=self.core)
 
     def get_following_boards(self) -> Generator[Board, None, None]:
         """Returns the Boards the user if following too (as a Board object)"""
-        content = core.fetch(f"{self.url}/following/")
+        content = self.core.fetch(f"{self.url}/following/")
         urls = regex_get_boards.findall(content)
         for url in urls:
-            yield Board(f"https://sex.com{url}")
+            yield Board(f"https://sex.com{url}", core=self.core)
 
     def get_pins(self) -> Generator[Pin, None, None]:
         """Returns the Pins of the User (as a Pin object)"""
         for page in range(1, 99):
             try:
-                content = core.fetch(f"{self.url}/pins/?page={page}")
+                content = self.core.fetch(f"{self.url}/pins/?page={page}")
                 urls = regex_extract_pins.findall(content)
 
             except (AttributeError, TypeError):
                 break
 
             for url in urls:
-                yield Pin(f"https://sex.com{url}")
+                yield Pin(f"https://sex.com{url}", core=self.core)
 
     def get_repins(self) -> Generator[Pin, None, None]:
         """Returns the Repins of the User (as a Pin object)"""
         for page in range(1, 99):
             try:
-                content = core.fetch(f"{self.url}/repins/?page={page}")
+                content = self.core.fetch(f"{self.url}/repins/?page={page}")
                 urls = regex_extract_pins.findall(content)
 
             except (AttributeError, TypeError):
                 break
 
             for url in urls:
-                yield Pin(f"https://sex.com{url}")
+                yield Pin(f"https://sex.com{url}", core=self.core)
 
     def get_liked_pins(self) -> Generator[Pin, None, None]:
         """Returns the liked Pins of the User (as a Pin object)"""
         for page in range(1, 99):
             try:
-                content = core.fetch(f"{self.url}/likes/?page={page}")
+                content = self.core.fetch(f"{self.url}/likes/?page={page}")
                 urls = regex_extract_pins.findall(content)
 
             except (AttributeError, TypeError):
                 break
 
             for url in urls:
-                yield Pin(f"https://sex.com{url}")
+                yield Pin(f"https://sex.com{url}", core=self.core)
 
 
 class Client:
+    def __init__(self, core=None):
+        self.core = core or BaseCore()
+        self.core.config.headers = headers
+        self.core.initialize_session()
 
-    @classmethod
-    def get_pin(cls, url) -> Pin:
+    def get_pin(self, url) -> Pin:
         """
         :param url: (str) The URL of the Pin
         :return: (Pin) The Pin object which can be used to access the Pin and receive data from it and download it.
         """
-        return Pin(url)
+        return Pin(url, core=self.core)
 
-    @classmethod
-    def search(cls, query, sort_relevance: Relevance = Relevance.popular, mode: Mode = Mode.pics, pages: int = 5) -> Generator:
+    def search(self, query, sort_relevance: Relevance = Relevance.popular, mode: Mode = Mode.pics, pages: int = 5) -> Generator:
         """
         :param query: (str) The search query
         :param sort_relevance: (Relevance) The Relevance object (see searching_filters.py)
@@ -324,40 +308,38 @@ class Client:
         query = query.replace(" ", "+")
 
         for page in range(1, pages):
-            content = core.fetch(url=f"https://sex.com/search/{mode}?query={query}{sort_relevance}&page={page}",
+            content = self.core.fetch(url=f"https://sex.com/search/{mode}?query={query}{sort_relevance}&page={page}",
                                  cookies=cookies)
 
             if mode == "pics" or mode == "gifs" or mode == "clips":
                 pins = regex_extract_pins.findall(content)
 
                 for pin in pins:
-                    yield Pin(f"https://sex.com{pin}")
+                    yield Pin(f"https://sex.com{pin}", core=self.core)
 
             elif mode == "users":
                 users = regex_get_users.findall(content)
                 for user in users:
-                    yield User(f"https://sex.com{user}")
+                    yield User(f"https://sex.com{user}", core=self.core)
 
             elif mode == "boards":
                 boards = regex_get_boards.findall(content)
                 for board in boards:
-                    yield Board(f"https://sex.com{board}")
+                    yield Board(f"https://sex.com{board}", core=self.core)
 
-    @classmethod
-    def get_user(cls, url) -> User:
+    def get_user(self, url) -> User:
         """
         :param url: (str) The URL of the User
         :return User: Returns the User object
         """
-        return User(url)
+        return User(url, core=self.core)
 
-    @classmethod
-    def get_board(cls, url) -> Board:
+    def get_board(self, url) -> Board:
         """
         :param url: (str) The URL of the Board
         :return Board: Returns the Board object
         """
-        return Board(url)
+        return Board(url, core=self.core)
 
 
 def main():
