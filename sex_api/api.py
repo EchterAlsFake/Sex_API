@@ -1,12 +1,10 @@
 import os
 import html
-import logging
 import argparse
 
 from typing import Generator
 from base_api.base import BaseCore
 from functools import cached_property
-from base_api.modules import config
 
 try:
     from modules.errors import *
@@ -135,8 +133,7 @@ class Pin:
             raise NotSupported("Sorry, but downloading this Pin is not supported. Remember, Clips (videos) are not "
                                "supported by this API!")
 
-        content = self.core.fetch(url=self.embed_url)
-        download_content = content.content
+        download_content = self.core.fetch(url=self.embed_url, get_bytes=True)
         name = self.name
 
         if not str(path).endswith(os.sep):
@@ -147,6 +144,9 @@ class Pin:
 
         elif ".jpg" in self.embed_url:
             file = open(f"{path}{name}.jpg", "wb")
+
+        elif ".webp" in self.embed_url:
+            file = open(f"{path}{name}.webp", "wb")
 
         else:
             return False
@@ -364,4 +364,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    clint = Client()
+    pin = clint.get_pin("https://www.sex.com/en/gifs/675187")
+    pin.download("./")

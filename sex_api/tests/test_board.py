@@ -1,7 +1,7 @@
 from ..api import Client
 
 client = Client()
-board = client.get_board("https://www.sex.com/user/keymatt22/cum-on/")
+board = client.get_board("https://www.sex.com/user/keymatt22/my-personal-favs/")
 
 
 def test_board_attributes():
