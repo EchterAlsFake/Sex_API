@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
 
 [project]
 name = "Sex_API"
@@ -9,10 +9,10 @@ requires-python = ">=3.12"
 description = "A Python API for the Porn Site Sex.com/pins"
 readme = { file = "README.md", content-type = "text/markdown" }
 authors = [{ name = "Johannes Habel", email = "EchterAlsFake@proton.me" }]
-license = { file = "LICENSE" }
+license = "LGPL-3.0-only"
+license-files = ["LICENSE"]
 dependencies = ["eaf_base_api"]
 classifiers = [
-  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
   "Programming Language :: Python",
 ]
 
@@ -22,6 +22,7 @@ Homepage = "https://github.com/EchterAlsFake/Sex_API"
 [project.scripts]
 sex_api = "sex_api.api:main"
 
-# Optional: make package discovery explicit (helps older setuptools)
-[tool.setuptools.packages.find]
-include = ["sex_api*"]
+
+[tool.uv.build-backend]
+module-name = "sex_api"
+module-root = ""
