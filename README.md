@@ -15,6 +15,22 @@ You can also perform a search with filters.
 > This API is related to sex.com/pins. This API does NOT support downloading videos from Sex.com nor video clips from sex.com/pins.
 > The Videos are DRM locked, and the video clips need Javascript to be loaded.
 
+# Features
+- Fetch Pin information
+- Download Pins
+- Fetch users
+- Fetch Comments
+- Fetch Boards
+- Asynchronous
+
+# Network Features
+- HTTP 2.0 / HTTP 3.0
+- Browser impersonation
+- Custom JA3
+- All proxy types
+- Proxy authentication
+- Speed Limit
+- DNS over HTTPS
 
 # Quickstart
 ### Have a look at the [Documentation](https://github.com/EchterAlsFake/API_Docs/blob/master/Porn_APIs/Sex_API.md) for more details
@@ -23,30 +39,38 @@ You can also perform a search with filters.
 - Or with: `pip install git+https://github.com/EchterAlsFake/sex_api` for the latest fixes / features
 
 ```python
-from sex_api.api import Client
+from sex_api import Client
 
-client = Client()
-
-# Fetch a Pin
-pin = client.get_pin("<URL>")
-pin.download("<PATH (Directory)>")
-
-# Print some attributes:
-print(pin.name)
-print(pin.publish_date) # See Docs for more
-
-# Fetch a User:
-user = client.get_user("URL")
-
-# Get users Pins:
-pins = user.get_pins()
-pins_liked = user.get_liked_pins()
-
-for pin in pins:
-    pin.download("<path>")
-    # ....... 
+async def do_something():
     
-# The features are nearly endless. See Documentation for more :)
+    client = Client()
+    
+    # Fetch a Pin
+    pin = await client.get_pin("<URL>")
+    await pin.download("<PATH (Directory)>")
+    
+    # Print some attributes:
+    print(pin.name)
+    print(pin.publish_date) # See Docs for more
+    
+    # Fetch a User:
+    user = await client.get_user("URL")
+    
+    # Get users Pins:
+    pins = user.get_pins()
+    async for pin in pins:
+        print(pin.name)
+    
+    pins_liked = user.get_liked_pins()
+    
+    async for pin in pins_liked:
+        print(pin.name)
+    
+    async for pin in pins:
+        pin.download("<path>") 
+        # ....... 
+        
+    # The features are nearly endless. See Documentation for more :)
 ```
 
 > [!NOTE]
@@ -74,4 +98,4 @@ Pull requests are also welcome.
 
 # License
 Licensed under the LGPLv3 License
-<br>Copyright (C) 2023–2025 Johannes Habel
+<br>Copyright (C) 2023–2026 Johannes Habel

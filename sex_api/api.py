@@ -2,9 +2,10 @@ import os
 import html
 import argparse
 
-from typing import Generator
+from curl_cffi import AsyncSession
 from base_api.base import BaseCore
 from functools import cached_property
+from typing import Generator, AsyncGenerator
 
 try:
     from modules.errors import *
@@ -75,10 +76,16 @@ class Pin:
     """
     Represents a Pin from Sex.com/pin/...
     """
-    def __init__(self, url, core=None):
+    def __init__(self, url: str, core: BaseCore, html_content: str | None = None):
         self.core = core
         self.url = url
-        self.html_content = self.core.fetch(url=url)
+        self.html_content = html_content
+
+    async def init(self):
+        if not self.html_content:
+            self.html_content = await self.core.fetch(url=self.url)
+
+        return self
 
     @cached_property
     def name(self) -> str:
@@ -122,7 +129,7 @@ class Pin:
 
         return html.unescape(download_url[0])
 
-    def download(self, path) -> bool:
+    async def download(self, path) -> bool:
         """
         :param path: (str or PathLike object) The path, where the pin should be downloaded to
         :return: (bool) True if the download was successful, False otherwise.
@@ -133,7 +140,7 @@ class Pin:
             raise NotSupported("Sorry, but downloading this Pin is not supported. Remember, Clips (videos) are not "
                                "supported by this API!")
 
-        download_content = self.core.fetch(url=self.embed_url, get_bytes=True)
+        download_content = await self.core.fetch(url=self.embed_url, get_bytes=True)
         name = self.name
 
         if not str(path).endswith(os.sep):
@@ -161,10 +168,16 @@ class Pin:
 
 
 class Board:
-    def __init__(self, url, core=None):
+    def __init__(self, url: str, core: BaseCore, html_content: str | None = None):
         self.core = core
         self.url = url
-        self.html_content = self.core.fetch(url)
+        self.html_content = html_content
+
+    async def init(self):
+        if not self.html_content:
+            self.html_content = await self.core.fetch(self.url)
+
+        return self
 
     @cached_property
     def total_pages_count(self) -> str:
@@ -178,24 +191,31 @@ class Board:
     def get_pin_count(self) -> str:
         return regex_pin_count.search(self.html_content).group(1)
 
-    def get_pins(self) -> Generator[Pin, None, None]:
+    async def get_pins(self) -> AsyncGenerator[Pin, None]:
         for page in range(1, 99):  # There is a really weird error when using @total_pages_count........ idk man...
             try:
-                content = self.core.fetch(f"{self.url}?page={page}")
+                content = await self.core.fetch(f"{self.url}?page={page}")
                 urls = regex_extract_pins.findall(content)
 
             except (AttributeError, TypeError): # Type error because it returns "Response" object from base API if 404
                 break
 
             for url in urls:
-                yield Pin(f"https://sex.com{url}", core=self.core)
+                pin = Pin(f"https://sex.com{url}", core=self.core)
+                yield await pin.init()
 
 
 class User:
-    def __init__(self, url, core=None):
+    def __init__(self, url: str, core: BaseCore, html_content: str | None = None):
         self.core = core
-        self.html_content = self.core.fetch(url)
         self.url = url
+        self.html_content = html_content
+
+    async def init(self):
+        if not self.html_content:
+            self.html_content = await self.core.fetch(self.url)
+
+        return self
 
     @cached_property
     def username(self) -> str:
@@ -232,73 +252,81 @@ class User:
         """Returns the total count of liked Pins the User has"""
         return regex_amount_likes.search(self.html_content).group(1)
 
-    def get_boards(self) -> Generator[Board, None, None]:
+    async def get_boards(self) -> AsyncGenerator[Board, None]:
         """Returns the Boards from the User (as a Board object)"""
         urls = regex_get_boards.findall(self.html_content)
         for url in urls:
-            yield Board(f"https://sex.com{url}", core=self.core)
+            board = Board(f"https://sex.com{url}", core=self.core)
+            yield await board.init()
 
-    def get_following_boards(self) -> Generator[Board, None, None]:
+    async def get_following_boards(self) -> AsyncGenerator[Board, None]:
         """Returns the Boards the user if following too (as a Board object)"""
-        content = self.core.fetch(f"{self.url}/following/")
+        content = await self.core.fetch(f"{self.url}/following/")
         urls = regex_get_boards.findall(content)
         for url in urls:
-            yield Board(f"https://sex.com{url}", core=self.core)
+            board = Board(f"https://sex.com{url}", core=self.core)
+            yield await board.init()
 
-    def get_pins(self) -> Generator[Pin, None, None]:
+    async def get_pins(self) -> AsyncGenerator[Pin, None]:
         """Returns the Pins of the User (as a Pin object)"""
         for page in range(1, 99):
             try:
-                content = self.core.fetch(f"{self.url}/pins/?page={page}")
+                content = await self.core.fetch(f"{self.url}/pins/?page={page}")
                 urls = regex_extract_pins.findall(content)
 
             except (AttributeError, TypeError):
                 break
 
             for url in urls:
-                yield Pin(f"https://sex.com{url}", core=self.core)
+                pin = Pin(f"https://sex.com{url}", core=self.core)
+                yield await pin.init()
 
-    def get_repins(self) -> Generator[Pin, None, None]:
+    async def get_repins(self) -> AsyncGenerator[Pin, None]:
         """Returns the Repins of the User (as a Pin object)"""
         for page in range(1, 99):
             try:
-                content = self.core.fetch(f"{self.url}/repins/?page={page}")
+                content = await self.core.fetch(f"{self.url}/repins/?page={page}")
                 urls = regex_extract_pins.findall(content)
 
             except (AttributeError, TypeError):
                 break
 
             for url in urls:
-                yield Pin(f"https://sex.com{url}", core=self.core)
+                pin = Pin(f"https://sex.com{url}", core=self.core)
+                yield await pin.init()
 
-    def get_liked_pins(self) -> Generator[Pin, None, None]:
+    async def get_liked_pins(self) -> AsyncGenerator[Pin, None]:
         """Returns the liked Pins of the User (as a Pin object)"""
         for page in range(1, 99):
             try:
-                content = self.core.fetch(f"{self.url}/likes/?page={page}")
+                content = await self.core.fetch(f"{self.url}/likes/?page={page}")
                 urls = regex_extract_pins.findall(content)
 
             except (AttributeError, TypeError):
                 break
 
             for url in urls:
-                yield Pin(f"https://sex.com{url}", core=self.core)
+                pin = Pin(f"https://sex.com{url}", core=self.core)
+                yield await pin.init()
 
 
 class Client:
-    def __init__(self, core=None):
-        self.core = core or BaseCore()
-        self.core.config.headers = headers
+    def __init__(self, core: BaseCore = BaseCore()):
+        self.core = core
         self.core.initialize_session()
+        assert isinstance(self.core.session, AsyncSession)
+        self.core.session.headers.update(headers)
 
-    def get_pin(self, url) -> Pin:
+    async def get_pin(self, url) -> Pin:
         """
         :param url: (str) The URL of the Pin
         :return: (Pin) The Pin object which can be used to access the Pin and receive data from it and download it.
         """
-        return Pin(url, core=self.core)
+        pin = Pin(url, core=self.core)
+        return await pin.init()
 
-    def search(self, query, sort_relevance: Relevance = Relevance.popular, mode: Mode = Mode.pics, pages: int = 5) -> Generator:
+    async def search(self, query, sort_relevance: Relevance | str = Relevance.popular, mode: Mode | str = Mode.pics,
+               pages: int = 5) -> AsyncGenerator[Pin | User | Board, None]:
         """
         :param query: (str) The search query
         :param sort_relevance: (Relevance) The Relevance object (see searching_filters.py)
@@ -308,62 +336,61 @@ class Client:
         query = query.replace(" ", "+")
 
         for page in range(1, pages):
-            content = self.core.fetch(url=f"https://sex.com/search/{mode}?query={query}{sort_relevance}&page={page}",
+            content = await self.core.fetch(url=f"https://sex.com/search/{mode}?query={query}{sort_relevance}&page={page}",
                                  cookies=cookies)
 
             if mode == "pics" or mode == "gifs" or mode == "clips":
                 pins = regex_extract_pins.findall(content)
 
                 for pin in pins:
-                    yield Pin(f"https://sex.com{pin}", core=self.core)
+                    pin = Pin(f"https://sex.com{pin}", core=self.core)
+                    yield await pin.init()
 
             elif mode == "users":
                 users = regex_get_users.findall(content)
                 for user in users:
-                    yield User(f"https://sex.com{user}", core=self.core)
+                    user = User(f"https://sex.com{user}", core=self.core)
+                    yield await user.init()
 
             elif mode == "boards":
                 boards = regex_get_boards.findall(content)
                 for board in boards:
-                    yield Board(f"https://sex.com{board}", core=self.core)
+                    board = Board(f"https://sex.com{board}", core=self.core)
+                    yield await board.init()
 
-    def get_user(self, url) -> User:
+    async def get_user(self, url) -> User:
         """
         :param url: (str) The URL of the User
         :return User: Returns the User object
         """
-        return User(url, core=self.core)
+        user = User(url, core=self.core)
+        return await user.init()
 
-    def get_board(self, url) -> Board:
+    async def get_board(self, url) -> Board:
         """
         :param url: (str) The URL of the Board
         :return Board: Returns the Board object
         """
-        return Board(url, core=self.core)
+        board = Board(url, core=self.core)
+        return await board.init()
 
 
-def main():
+async def main():
     parser = argparse.ArgumentParser(description="Sex.com API Command Line Interface")
     parser.add_argument("--download", type=str, help="The Pin URL")
     parser.add_argument("--output", type=str, help="The Output Path (directory)")
     parser.add_argument("--board", type=str, help="URL to download a whole board")
     args = parser.parse_args()
+    client = Client()
 
     if args.download:
-        client = Client()
-        pin = client.get_pin(args.download)
-        pin.download(path=args.output)
+
+        pin = await client.get_pin(args.download)
+        await pin.download(path=args.output)
 
     if args.board:
-        client = Client()
-        board = client.get_board(args.board)
+        board = await client.get_board(args.board)
         pins = board.get_pins()
 
-        for pin in pins:
-            pin.download(path=args.output)
-
-
-if __name__ == "__main__":
-    clint = Client()
-    pin = clint.get_pin("https://www.sex.com/en/gifs/675187")
-    pin.download("./")
+        async for pin in pins:
+            await pin.download(path=args.output)

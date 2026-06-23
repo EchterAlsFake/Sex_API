@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Sex_API"
-version = "1.3.4"
+version = "2.0"
+requires-python = ">=3.12"
 description = "A Python API for the Porn Site Sex.com/pins"
 readme = { file = "README.md", content-type = "text/markdown" }
 authors = [{ name = "Johannes Habel", email = "EchterAlsFake@proton.me" }]

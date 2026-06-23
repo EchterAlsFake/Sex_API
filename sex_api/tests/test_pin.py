@@ -1,10 +1,15 @@
+import pytest
 from ..api import Client, Tag, Comment
 
-client = Client()
-pin = client.get_pin("https://www.sex.com/pin/66118934-model-anna-l/")
+
+@pytest.fixture
+def client():
+    return Client()
 
 
-def test_pin():
+@pytest.mark.asyncio
+async def test_pin(client):
+    pin = await client.get_pin("https://www.sex.com/pin/66118934-model-anna-l/")
     assert isinstance(pin.embed_url, str) and len(pin.embed_url) > 3
     assert isinstance(pin.name, str) and len(pin.name) > 3
     assert isinstance(pin.tags, Tag)

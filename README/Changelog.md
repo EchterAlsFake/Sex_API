@@ -20,3 +20,13 @@
 - better headers
 - improved networking
 - fixed tests
+
+# v2.0
+- Converted the entire project to an asynchronous structure using `curl_cffi`'s `AsyncSession`.
+- All methods fetching data are now asynchronous and must be awaited (e.g. `client.get_pin(...)` -> `await client.get_pin(...)`).
+- Collection fetching methods now return `AsyncGenerator`s instead of standard Generators, which requires the use of `async for` loops.
+- Updated all test cases to support `pytest-asyncio`.
+- browser impersonation
+- dns over https
+- proxies 
+- and and and 
